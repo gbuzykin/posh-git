@@ -237,8 +237,6 @@ function Write-GitStatus {
         $sb | Write-GitWorkingDirStatus $Status > $null
     }
 
-    $sb | Write-GitWorkingDirStatusSummary $Status > $null
-
     if ($s.EnableStashStatus -and ($Status.StashCount -gt 0)) {
         $sb | Write-GitStashCount $Status > $null
     }
@@ -599,29 +597,9 @@ function Write-GitIndexStatus {
 
         if ($s.ShowStatusWhenZero -or $Status.Index.Deleted) {
             $indexStatusText = " "
-            if ($NoLeadingSpace) {
-                $indexStatusText = ""
-                $NoLeadingSpace = $false
-            }
+            if ($NoLeadingSpace) { $indexStatusText = "" }
 
             $indexStatusText += "$($s.FileRemovedText)$($Status.Index.Deleted.Count)"
-
-            if ($StringBuilder) {
-                $StringBuilder | Write-Prompt $indexStatusText -Color $s.IndexColor > $null
-            }
-            else {
-                $str += Write-Prompt $indexStatusText -Color $s.IndexColor
-            }
-        }
-
-        if ($Status.Index.Unmerged) {
-            $indexStatusText = " "
-            if ($NoLeadingSpace) {
-                $indexStatusText = ""
-                $NoLeadingSpace = $false
-            }
-
-            $indexStatusText += "$($s.FileConflictedText)$($Status.Index.Unmerged.Count)"
 
             if ($StringBuilder) {
                 $StringBuilder | Write-Prompt $indexStatusText -Color $s.IndexColor > $null
@@ -729,20 +707,16 @@ function Write-GitWorkingDirStatus {
             }
         }
 
-        if ($Status.Working.Unmerged) {
-            $workingStatusText = " "
-            if ($NoLeadingSpace) {
-                $workingStatusText = ""
-                $NoLeadingSpace = $false
-            }
-
-            $workingStatusText += "$($s.FileConflictedText)$($Status.Working.Unmerged.Count)"
+        if ($Status.Working.Conflicted -or $Status.Working.ConflictedDeleted) {
+            $workingStatusText = "$($s.FileConflictedText)$($Status.Working.Conflicted.Count + $Status.Working.ConflictedDeleted.Count)"
 
             if ($StringBuilder) {
-                $StringBuilder | Write-Prompt $workingStatusText -Color $s.WorkingColor > $null
+                if (!$NoLeadingSpace) { $StringBuilder | Write-Prompt " " > $null }
+                $StringBuilder | Write-Prompt $workingStatusText -Color $s.ConflictedColor > $null
             }
             else {
-                $str += Write-Prompt $workingStatusText -Color $s.WorkingColor
+                if (!$NoLeadingSpace) { $str += Write-Prompt " " }
+                $str += Write-Prompt $workingStatusText -Color $s.ConflictedColor
             }
         }
     }

@@ -231,6 +231,7 @@ class PoshGitPromptSettings {
 
     [PoshGitCellColor]$IndexColor   = [PoshGitCellColor]::new([ConsoleColor]::DarkGreen)
     [PoshGitCellColor]$WorkingColor = [PoshGitCellColor]::new([ConsoleColor]::DarkRed)
+    [PoshGitCellColor]$ConflictedColor = [PoshGitCellColor]::new([ConsoleColor]::Black, [ConsoleColor]::DarkRed)
     [PoshGitCellColor]$StashColor   = [PoshGitCellColor]::new([ConsoleColor]::Red)
     [PoshGitCellColor]$ErrorColor   = [PoshGitCellColor]::new([ConsoleColor]::Red)
 

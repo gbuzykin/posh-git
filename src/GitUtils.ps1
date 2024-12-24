@@ -262,11 +262,11 @@ function Get-GitStatus {
         $indexAdded = New-Object System.Collections.Generic.List[string]
         $indexModified = New-Object System.Collections.Generic.List[string]
         $indexDeleted = New-Object System.Collections.Generic.List[string]
-        $indexUnmerged = New-Object System.Collections.Generic.List[string]
         $filesAdded = New-Object System.Collections.Generic.List[string]
         $filesModified = New-Object System.Collections.Generic.List[string]
         $filesDeleted = New-Object System.Collections.Generic.List[string]
-        $filesUnmerged = New-Object System.Collections.Generic.List[string]
+        $filesConflicted = New-Object System.Collections.Generic.List[string]
+        $filesConflictedDeleted = New-Object System.Collections.Generic.List[string]
         $stashCount = 0
 
         $fileStatusEnabled = $Force -or $settings.EnableFileStatus
@@ -296,7 +296,6 @@ function Get-GitStatus {
                         $indexModified.Add($indexRenamed.Old)
                     }
                     $indexDeleted.AddRange($castStringSeq.Invoke($null, (, @($cacheResponse.IndexDeleted))))
-                    $indexUnmerged.AddRange($castStringSeq.Invoke($null, (, @($cacheResponse.Conflicted))))
 
                     $filesAdded.AddRange($castStringSeq.Invoke($null, (, @($cacheResponse.WorkingAdded))))
                     $filesModified.AddRange($castStringSeq.Invoke($null, (, @($cacheResponse.WorkingModified))))
@@ -304,7 +303,8 @@ function Get-GitStatus {
                         $filesModified.Add($workingRenamed.Old)
                     }
                     $filesDeleted.AddRange($castStringSeq.Invoke($null, (, @($cacheResponse.WorkingDeleted))))
-                    $filesUnmerged.AddRange($castStringSeq.Invoke($null, (, @($cacheResponse.Conflicted))))
+                    $filesConflicted.AddRange($castStringSeq.Invoke($null, (, @($cacheResponse.Conflicted))))
+                    $filesConflictedDeleted.AddRange($castStringSeq.Invoke($null, (, @($cacheResponse.ConflictedDeleted))))
 
                     $branch = $cacheResponse.Branch
                     $upstream = $cacheResponse.Upstream
@@ -348,20 +348,33 @@ function Get-GitStatus {
                             $path1 = $path1.Substring(1, $path1.Length - 2)
                         }
 
-                        switch ($matches['index']) {
-                            'A' { $null = $indexAdded.Add($path1); break }
-                            'M' { $null = $indexModified.Add($path1); break }
-                            'R' { $null = $indexModified.Add($path1); break }
-                            'C' { $null = $indexModified.Add($path1); break }
-                            'D' { $null = $indexDeleted.Add($path1); break }
-                            'U' { $null = $indexUnmerged.Add($path1); break }
-                        }
-                        switch ($matches['working']) {
-                            '?' { $null = $filesAdded.Add($path1); break }
-                            'A' { $null = $filesAdded.Add($path1); break }
-                            'M' { $null = $filesModified.Add($path1); break }
-                            'D' { $null = $filesDeleted.Add($path1); break }
-                            'U' { $null = $filesUnmerged.Add($path1); break }
+                        if ((($matches['index'] -eq 'A') -and ($matches['working'] -eq 'A')) `
+                            -or (($matches['index'] -eq 'D') -and ($matches['working'] -eq 'D')) `
+                            -or ($matches['index'] -eq 'U') -or ($matches['working'] -eq 'U')) {
+                                if ($matches['working'] -ne 'D') {
+                                    $null = $filesConflicted.Add($path1)
+                                }
+                                else {
+                                    $null = $filesConflictedDeleted.Add($path1)
+                                }
+                        } else {
+                            switch ($matches['index']) {
+                                'A' { $null = $indexAdded.Add($path1); break }
+                                'D' { $null = $indexDeleted.Add($path1); break }
+                                'M' { $null = $indexModified.Add($path1); break }
+                                'T' { $null = $indexModified.Add($path1); break }
+                                'R' { $null = $indexModified.Add($path1); break }
+                                'C' { $null = $indexModified.Add($path1); break }
+                            }
+                            switch ($matches['working']) {
+                                '?' { $null = $filesAdded.Add($path1); break }
+                                'A' { $null = $filesAdded.Add($path1); break }
+                                'D' { $null = $filesDeleted.Add($path1); break }
+                                'M' { $null = $filesModified.Add($path1); break }
+                                'T' { $null = $filesModified.Add($path1); break }
+                                'R' { $null = $filesModified.Add($path1); break }
+                                'C' { $null = $filesModified.Add($path1); break }
+                            }
                         }
                         continue
                     }
@@ -396,19 +409,19 @@ function Get-GitStatus {
         # This collection is used twice, so create the array just once
         $filesAdded = $filesAdded.ToArray()
 
-        $indexPaths = @(GetUniquePaths $indexAdded, $indexModified, $indexDeleted, $indexUnmerged)
-        $workingPaths = @(GetUniquePaths $filesAdded, $filesModified, $filesDeleted, $filesUnmerged)
+        $indexPaths = @(GetUniquePaths $indexAdded, $indexModified, $indexDeleted)
+        $workingPaths = @(GetUniquePaths $filesAdded, $filesModified, $filesDeleted, $filesConflicted, $filesConflictedDeleted)
         $index = (, $indexPaths) |
             Add-Member -Force -PassThru NoteProperty Added    $indexAdded.ToArray() |
             Add-Member -Force -PassThru NoteProperty Modified $indexModified.ToArray() |
-            Add-Member -Force -PassThru NoteProperty Deleted  $indexDeleted.ToArray() |
-            Add-Member -Force -PassThru NoteProperty Unmerged $indexUnmerged.ToArray()
+            Add-Member -Force -PassThru NoteProperty Deleted  $indexDeleted.ToArray()
 
         $working = (, $workingPaths) |
-            Add-Member -Force -PassThru NoteProperty Added    $filesAdded |
-            Add-Member -Force -PassThru NoteProperty Modified $filesModified.ToArray() |
-            Add-Member -Force -PassThru NoteProperty Deleted  $filesDeleted.ToArray() |
-            Add-Member -Force -PassThru NoteProperty Unmerged $filesUnmerged.ToArray()
+            Add-Member -Force -PassThru NoteProperty Added             $filesAdded |
+            Add-Member -Force -PassThru NoteProperty Modified          $filesModified.ToArray() |
+            Add-Member -Force -PassThru NoteProperty Deleted           $filesDeleted.ToArray() |
+            Add-Member -Force -PassThru NoteProperty Conflicted        $filesConflicted.ToArray() |
+            Add-Member -Force -PassThru NoteProperty ConflictedDeleted $filesConflictedDeleted.ToArray()
 
         $result = New-Object PSObject -Property @{
             GitDir       = $GitDir

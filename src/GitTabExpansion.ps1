@@ -214,11 +214,11 @@ function script:gitIndex($GitStatus, $filter) {
 }
 
 function script:gitAddFiles($GitStatus, $filter) {
-    gitFiles $filter (@($GitStatus.Working.Unmerged) + @($GitStatus.Working.Modified) + @($GitStatus.Working.Added))
+    gitFiles $filter (@($GitStatus.Working.Conflicted) + @($GitStatus.Working.Modified) + @($GitStatus.Working.Added))
 }
 
 function script:gitCheckoutFiles($GitStatus, $filter) {
-    gitFiles $filter (@($GitStatus.Working.Unmerged) + @($GitStatus.Working.Modified) + @($GitStatus.Working.Deleted))
+    gitFiles $filter (@($GitStatus.Working.ConflictedDeleted) + @($GitStatus.Working.Modified) + @($GitStatus.Working.Deleted))
 }
 
 function script:gitDeleted($GitStatus, $filter) {
@@ -230,12 +230,12 @@ function script:gitDiffFiles($GitStatus, $filter, $staged) {
         gitFiles $filter $GitStatus.Index.Modified
     }
     else {
-        gitFiles $filter (@($GitStatus.Working.Unmerged) + @($GitStatus.Working.Modified) + @($GitStatus.Index.Modified))
+        gitFiles $filter (@($GitStatus.Working.Conflicted) + @($GitStatus.Working.Modified) + @($GitStatus.Index.Modified))
     }
 }
 
 function script:gitMergeFiles($GitStatus, $filter) {
-    gitFiles $filter $GitStatus.Working.Unmerged
+    gitFiles $filter $GitStatus.Working.Conflicted
 }
 
 function script:gitRestoreFiles($GitStatus, $filter, $staged) {
@@ -243,7 +243,7 @@ function script:gitRestoreFiles($GitStatus, $filter, $staged) {
         gitFiles $filter (@($GitStatus.Index.Added) + @($GitStatus.Index.Modified) + @($GitStatus.Index.Deleted))
     }
     else {
-        gitFiles $filter (@($GitStatus.Working.Unmerged) + @($GitStatus.Working.Modified) + @($GitStatus.Working.Deleted))
+        gitFiles $filter (@($GitStatus.Working.Conflicted) + @($GitStatus.Working.Modified) + @($GitStatus.Working.Deleted))
     }
 }
 
