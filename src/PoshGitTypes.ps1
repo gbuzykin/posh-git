@@ -227,12 +227,14 @@ class PoshGitPromptSettings {
     [bool]$SetEnvColumns = $true
 
     [PoshGitCellColor]$DefaultColor = [PoshGitCellColor]::new()
+    [PoshGitCellColor]$PSColor      = [PoshGitCellColor]::new([ConsoleColor]::Green)
+    [PoshGitCellColor]$PathColor    = [PoshGitCellColor]::new([ConsoleColor]::Blue)
     [PoshGitCellColor]$BranchColor  = [PoshGitCellColor]::new([ConsoleColor]::Cyan)
 
     [PoshGitCellColor]$IndexColor   = [PoshGitCellColor]::new([ConsoleColor]::DarkGreen)
     [PoshGitCellColor]$WorkingColor = [PoshGitCellColor]::new([ConsoleColor]::DarkRed)
     [PoshGitCellColor]$ConflictedColor = [PoshGitCellColor]::new([ConsoleColor]::Black, [ConsoleColor]::DarkRed)
-    [PoshGitCellColor]$StashColor   = [PoshGitCellColor]::new([ConsoleColor]::Red)
+    [PoshGitCellColor]$StashColor   = [PoshGitCellColor]::new([ConsoleColor]::DarkYellow)
     [PoshGitCellColor]$ErrorColor   = [PoshGitCellColor]::new([ConsoleColor]::Red)
 
     [PoshGitTextSpan]$PathStatusSeparator      = ' '

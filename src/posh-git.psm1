@@ -59,23 +59,24 @@ $GitPromptScriptBlock = {
 
     # Construct/write the prompt text
     $prompt = ''
+    $prompt += Write-Prompt 'PS ' -Color $settings.PSColor
 
     # Write default prompt prefix
     $prompt += Write-Prompt $settings.DefaultPromptPrefix.Expand()
 
     # Get the current path - formatted correctly
-    $promptPath = $settings.DefaultPromptPath.Expand()
+    $promptPath = $settings.DefaultPromptPath.Expand().ToAnsiString()
 
     # Write the delimited path and Git status summary information
     if ($settings.DefaultPromptWriteStatusFirst) {
         $prompt += Write-VcsStatus
         $prompt += Write-Prompt $settings.BeforePath.Expand()
-        $prompt += Write-Prompt $promptPath
+        $prompt += Write-Prompt $promptPath -Color $settings.PathColor
         $prompt += Write-Prompt $settings.AfterPath.Expand()
     }
     else {
         $prompt += Write-Prompt $settings.BeforePath.Expand()
-        $prompt += Write-Prompt $promptPath
+        $prompt += Write-Prompt $promptPath -Color $settings.PathColor
         $prompt += Write-Prompt $settings.AfterPath.Expand()
         $prompt += Write-VcsStatus
     }
