@@ -246,8 +246,8 @@ class PoshGitPromptSettings {
     [PoshGitTextSpan]$AfterPath                = [PoshGitTextSpan]::new('', [ConsoleColor]::Yellow)
 
     [PoshGitTextSpan]$BeforeIndex              = [PoshGitTextSpan]::new('', [ConsoleColor]::DarkGreen)
-    [PoshGitTextSpan]$BeforeStash              = [PoshGitTextSpan]::new(' (', [ConsoleColor]::Red)
-    [PoshGitTextSpan]$AfterStash               = [PoshGitTextSpan]::new(')', [ConsoleColor]::Red)
+    [PoshGitTextSpan]$BeforeStash              = [PoshGitTextSpan]::new(' (', [ConsoleColor]::DarkYellow)
+    [PoshGitTextSpan]$AfterStash               = [PoshGitTextSpan]::new(')', [ConsoleColor]::DarkYellow)
 
     [PoshGitTextSpan]$LocalDefaultStatusSymbol = [PoshGitTextSpan]::new('', [ConsoleColor]::DarkGreen)
     [PoshGitTextSpan]$LocalWorkingStatusSymbol = [PoshGitTextSpan]::new('!', [ConsoleColor]::DarkRed)
@@ -267,8 +267,8 @@ class PoshGitPromptSettings {
     [string]$FileConflictedText  = '!'
     [string]$BranchUntrackedText = ''
 
-    [bool]$EnableStashStatus     = $false
-    [bool]$ShowStatusWhenZero    = $true
+    [bool]$EnableStashStatus     = $true
+    [bool]$ShowStatusWhenZero    = $false
     [bool]$AutoRefreshIndex      = $true
 
     [UntrackedFilesMode]$UntrackedFilesMode = [UntrackedFilesMode]::Default

@@ -65,39 +65,15 @@ function Get-GitBranch($branch = $null, $gitDir = $(Get-GitDirectory), [switch]$
     Invoke-Utf8ConsoleCommand {
         dbg 'Finding branch' $sw
         $r = ''; $b = ''; $c = ''
-        $step = ''; $total = ''
         if (Test-Path $gitDir/rebase-merge) {
             dbg 'Found rebase-merge' $sw
-            if (Test-Path $gitDir/rebase-merge/interactive) {
-                dbg 'Found rebase-merge/interactive' $sw
-                $r = '|REBASE-i'
-            }
-            else {
-                $r = '|REBASE-m'
-            }
             $b = "$(Get-Content $gitDir/rebase-merge/head-name)"
             $step = "$(Get-Content $gitDir/rebase-merge/msgnum)"
             $total = "$(Get-Content $gitDir/rebase-merge/end)"
+            $r = "|REBASING $step/$total"
         }
         else {
-            if (Test-Path $gitDir/rebase-apply) {
-                dbg 'Found rebase-apply' $sw
-                $step = "$(Get-Content $gitDir/rebase-apply/next)"
-                $total = "$(Get-Content $gitDir/rebase-apply/last)"
-
-                if (Test-Path $gitDir/rebase-apply/rebasing) {
-                    dbg 'Found rebase-apply/rebasing' $sw
-                    $r = '|REBASE'
-                }
-                elseif (Test-Path $gitDir/rebase-apply/applying) {
-                    dbg 'Found rebase-apply/applying' $sw
-                    $r = '|AM'
-                }
-                else {
-                    $r = '|AM/REBASE'
-                }
-            }
-            elseif (Test-Path $gitDir/MERGE_HEAD) {
+            if (Test-Path $gitDir/MERGE_HEAD) {
                 dbg 'Found MERGE_HEAD' $sw
                 $r = '|MERGING'
             }
@@ -112,10 +88,6 @@ function Get-GitBranch($branch = $null, $gitDir = $(Get-GitDirectory), [switch]$
             elseif (Test-Path $gitDir/BISECT_LOG) {
                 dbg 'Found BISECT_LOG' $sw
                 $r = '|BISECTING'
-            }
-
-            if ($step -and $total) {
-                $r += " $step/$total"
             }
 
             $b = Invoke-NullCoalescing `
